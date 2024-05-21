@@ -1,1 +1,1 @@
-# ADP-project
+# 3D Structure Prediction and Disorder Analysis Toolkit
