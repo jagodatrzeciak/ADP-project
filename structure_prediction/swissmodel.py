@@ -3,6 +3,7 @@ import requests
 import os
 import gzip
 import io
+import time
 
 import urllib.request
 from Bio import SeqIO
@@ -25,7 +26,6 @@ def run_swissmodel(sequence):
     project_id = response.json()["project_id"]
 
     # And loop until the project completes
-    import time
     while True:
         # We wait for some time
         time.sleep(10)
