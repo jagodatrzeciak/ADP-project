@@ -19,6 +19,17 @@ ESMFold is a state-of-the-art method for predicting protein structures from meta
 
 Fortunately, no additional steps are required.
 
+### OmegaFold
+
+To use this model you need follow the instructions below:
+
+```
+git clone https://github.com/HeliXonProtein/OmegaFold
+cd OmegaFold
+python setup.py install
+```
+This command will download the weight from https://helixon.s3.amazonaws.com/release1.pt to 
+```~/.cache/omegafold_ckpt/model.pt``` and load the model.
 ## Disorder Prediction and Visualization
 
 ### Overview
