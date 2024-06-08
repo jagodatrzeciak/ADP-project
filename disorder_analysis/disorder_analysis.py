@@ -57,7 +57,7 @@ def run_iupred(sequences):
             tmp.write(f'>{key}\n')
             tmp.write(f'{sequences[key]}\n')
 
-        iupred_command = ["python3", "disorder_analysis/iupred2a/iupred2a.py", file, "short"]
+        iupred_command = ["python", "disorder_analysis/iupred2a/iupred2a.py", file, "short"]
         out = subprocess.run(iupred_command, capture_output=True, encoding="utf-8").stdout
         out = out.split("POS\tRES\tIUPRED2\n")[1].split("\n")
         disorder = ""
@@ -90,17 +90,21 @@ def main(input):
     print("Disorder Analysis and Visualization")
     print("\n")
 
+    result_dir_path = "disorder_analysis/result"
+    if not os.path.isdir(result_dir_path):
+        os.makedirs(result_dir_path)
+
     if input.endswith('.pdb'):
         if not os.path.exists(input):
             print(f"PDB file {input} does not exist.")
             exit(1)
         sequences = get_seq_from_pdb(input)
         pdb_file = input
-        output = f"disorder_analysis/result/{input.split('.')[0]}.pse"
+        output = f"{result_dir_path}/{input.split('.')[0]}.pse"
     else:
         sequences = {'A': get_sequence_from_uniprot(input)}
         pdb_file = download_pdb(input)
-        output = f"disorder_analysis/result/{input}.pse"
+        output = f"{result_dir_path}/{input}.pse"
 
     # Run IUPred
     iupred_result = run_iupred(sequences)
