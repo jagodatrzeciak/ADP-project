@@ -7,19 +7,21 @@ This toolkit provides two primary functionalities:
 
 ## 3D Structure Prediction Using Multiple Methods
 
-### Swiss-Model
+### Requirements:
+
+#### Swiss-Model (https://swissmodel.expasy.org/)
 To use this service, you'll need to register and obtain an API token. Follow the steps below to get started:
 - Create account at `https://swissmodel.expasy.org/`
 - Go to `https://swissmodel.expasy.org/account`
 - Copy your API token 
 - Save it as SWISSMODEL_EXPASY_API_TOKEN in your environment
 
-### ESM Metagenomic (ESMFold)
+#### ESM Metagenomic (ESMFold) (https://github.com/facebookresearch/esm)
 ESMFold is a state-of-the-art method for predicting protein structures from metagenomic data. It leverages deep learning techniques and the ESM model to accurately predict protein structure.
 
 Fortunately, no additional steps are required.
 
-### OmegaFold
+#### OmegaFold (https://github.com/HeliXonProtein/OmegaFold?tab=readme-ov-file)
 
 To use this model you need follow the instructions below:
 
@@ -30,6 +32,10 @@ python setup.py install
 ```
 This command will download the weight from https://helixon.s3.amazonaws.com/release1.pt to 
 ```~/.cache/omegafold_ckpt/model.pt``` and load the model.
+
+## Usage
+TODO
+
 ## Disorder Prediction and Visualization
 
 ### Overview
