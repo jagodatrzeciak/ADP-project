@@ -1,10 +1,16 @@
 import tkinter as tk
 from tkinter import messagebox
 import subprocess
+import os
+from subprocess import Popen
 from utils import check_fasta_correctness, write_fasta_file_to_temp, pdb_correctness, uniprot_correctness
 
 
 def process_input():
+    """
+    Process the input based on the selected input type. Show the model selection screen if the input is correct.
+    Creates fasta file. :return:
+    """
     input_type = input_type_var.get()
     if input_type == "FASTA":
         fasta_sequence = fasta_text.get("1.0", tk.END).strip()
@@ -132,9 +138,11 @@ def ask_iupred_analysis(results, path_to_fasta):
         widget.pack_forget()
 
     tk.Label(root, text="Do you want to run IUPred analysis?").pack(pady=10)
-    tk.Button(root, text="Yes", command=lambda: run_iupred(results, path_to_fasta)).pack(side=tk.LEFT, padx=10, pady=20)
-    tk.Button(root, text="No", command=lambda: show_final_screen(path_to_fasta, results)).pack(side=tk.RIGHT, padx=10,
-                                                                                               pady=20)
+    button_frame = tk.Frame(root)
+    button_frame.pack(pady=20)
+    tk.Button(button_frame, text="Yes", command=lambda: run_iupred(results, path_to_fasta)).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="No", command=lambda: show_final_screen(path_to_fasta, results)).pack(side=tk.LEFT,
+                                                                                                       padx=10)
 
 
 def show_final_screen(path_to_fasta, pdb_files, iupred=None):
@@ -157,6 +165,8 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
         tk.Label(root, text="Paths to pymol session with based on disorder colored structures:").pack(pady=10)
         for res in iupred:
             tk.Label(root, text=res).pack(pady=5)
+    if len(pdb_files) > 1:
+        tk.Label(root, text=f"RMSD: {rmsd(pdb_files)}").pack(pady=20)
     tk.Label(root, text="PDB files created by models:").pack(pady=10)
     for pdb_file in pdb_files:
         tk.Label(root, text=pdb_file).pack(pady=5)
@@ -170,9 +180,36 @@ def open_pymol(pdb_files):
     :param pdb_files:
     :return:
     """
-    for pdb_file in pdb_files:
-        subprocess.run(["pymol", pdb_file])
+    Popen(["pymol"] + pdb_files).pid
 
+
+def rmsd(pdb_files):
+    """
+    Open the Pymol windows with the pdb files in silent mode,
+    make superposition and calculate RMSD if more than one file.
+    :param pdb_files: List of PDB file paths
+    :return: RMSD value if more than one file, None otherwise
+    """
+    script_content = ""
+    for i, pdb in enumerate(pdb_files):
+        script_content += f"load {pdb}, model{i + 1}\n"
+
+    if len(pdb_files) > 1:
+        script_content += "super " + ", ".join([f"model{i + 1}" for i in range(len(pdb_files))]) + "\n"
+        script_content += "print('RMSD:', cmd.rms_cur('model1', 'model2'))\n"
+
+    script_path = "temp_pymol_script.pml"
+    with open(script_path, 'w') as script_file:
+        script_file.write(script_content)
+
+    result = subprocess.run(["pymol", "-cq", script_path], capture_output=True, text=True)
+    os.remove(script_path)
+    rmsd = None
+    if "RMSD: " in result.stdout:
+        rmsd = float(result.stdout.split("RMSD: ")[1].strip())
+        print(f"RMSD: {rmsd}")
+
+    return rmsd
 
 def run_iupred(paths_to_pdb, path_to_fasta):
     """
@@ -187,7 +224,7 @@ def run_iupred(paths_to_pdb, path_to_fasta):
     iupred_results = []
     for pdb_file in paths_to_pdb:
         try:
-            result = subprocess.run(["python", "disorder_analysis/disorder_analysis.py", pdb_file], capture_output=True, text=True, check=True)
+            result = subprocess.run(["python", "disorder_analysis/iupred2a/iupred2a.py", pdb_file], capture_output=True, text=True, check=True)
             iupred_results.append(result.stdout.strip().split(" ")[-1])
             print(f"IUPred executed successfully. Path to pdb: {result.stdout.strip()}")
         except Exception as e:
@@ -228,6 +265,8 @@ def show_main_screen():
 
 root = tk.Tk()
 root.title("Protein Modeling Tool")
+default_font = ("Times", 12)
+root.option_add("*Font", default_font)
 root.geometry("800x500")
 
 tk.Label(root, text="3D Structure Prediction and Disorder Analysis Toolkit", font=("Helvetica", 20)).pack(pady=10)
