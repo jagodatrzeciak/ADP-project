@@ -6,7 +6,18 @@ This toolkit provides two primary functionalities:
 
 
 ## 3D Structure Prediction Using Multiple Methods
-TODO
+
+### Swiss-Model
+To use this service, you'll need to register and obtain an API token. Follow the steps below to get started:
+- Create account at `https://swissmodel.expasy.org/`
+- Go to `https://swissmodel.expasy.org/account`
+- Copy your API token 
+- Save it as SWISSMODEL_EXPASY_API_TOKEN in your environment
+
+### ESM Metagenomic (ESMFold)
+ESMFold is a state-of-the-art method for predicting protein structures from metagenomic data. It leverages deep learning techniques and the ESM model to accurately predict protein structure.
+
+Fortunately, no additional steps are required.
 
 ## Disorder Prediction and Visualization
 
