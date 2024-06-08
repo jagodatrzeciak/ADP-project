@@ -17,7 +17,7 @@ def main(fasta_file):
         sequence = str(record.seq)
         pdb_data = run_esmfold(sequence)
         if pdb_data:
-            pdb_file_name = fasta_file.replace(".fasta", f".pdb")
+            pdb_file_name = f"{fasta_file.split('.')[0]}_esm.pdb"
 
             with open(pdb_file_name, "w") as pdb_file:
                 pdb_file.write(pdb_data)
