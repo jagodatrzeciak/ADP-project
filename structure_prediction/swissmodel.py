@@ -50,7 +50,7 @@ def run_swissmodel(sequence):
         pdb_data = gzip.GzipFile(fileobj=io.BytesIO(pdb_data_gz)).read().decode('utf-8')
         return pdb_data
     else:
-        print('Model building failed')
+        raise Exception('Model building failed')
 
 def main(fasta_file):
     for record in SeqIO.parse(fasta_file, "fasta"):
