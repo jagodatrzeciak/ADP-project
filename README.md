@@ -33,7 +33,7 @@ python setup.py install
 This command will download the weight from https://helixon.s3.amazonaws.com/release1.pt to 
 ```~/.cache/omegafold_ckpt/model.pt``` and load the model.
 
-## Usage
+### Usage
 TODO
 
 ## Disorder Prediction and Visualization
