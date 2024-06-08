@@ -1,4 +1,5 @@
-import wget
+import requests
+# copilot please change wget to requests
 
 
 def check_fasta_correctness(fasta_sequence):
@@ -38,9 +39,10 @@ def pdb_correctness(pdb_id):
     """
     pdb_id = pdb_id.strip()
     try:
-        fasta_file = wget.download(f'https://www.rcsb.org/fasta/entry/{pdb_id}')
-        # pdb_file = wget.download(f'https://files.rcsb.org/download/{pdb_id}.pdb')
-        return fasta_file
+        fasta = requests.get(f'https://www.rcsb.org/fasta/entry/{pdb_id}')
+        with open(f"{pdb_id}.fasta", "w") as fasta_file:
+            fasta_file.write(fasta.text)
+        return fasta_file.name
     except:
         return None
 
@@ -53,7 +55,9 @@ def uniprot_correctness(uniprot_id):
     """
     try:
         uniprot_id = uniprot_id.strip()
-        fasta_file = wget.download(f'https://rest.uniprot.org/uniprotkb/{uniprot_id}.fasta')
-        return fasta_file
+        fasta = requests.get(f'https://www.uniprot.org/uniprot/{uniprot_id}.fasta')
+        with open(f"{uniprot_id}.fasta", "w") as fasta_file:
+            fasta_file.write(fasta.text)
+        return fasta_file.name
     except:
         return None

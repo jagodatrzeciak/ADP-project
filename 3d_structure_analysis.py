@@ -96,7 +96,7 @@ def run_models(path_to_fasta):
     """
     selected_models = []
     if model1_var.get():
-        selected_models.append("swissmodel.py")
+        selected_models.append("structure_prediction/swissmodel.py")
     if model2_var.get():
         selected_models.append("structure_prediction/esm.py")
     if model3_var.get():
@@ -106,9 +106,11 @@ def run_models(path_to_fasta):
         results = []
         for model in selected_models:
             try:
-                result = subprocess.run(["python", model, str(path_to_fasta.name)], capture_output=True, text=True, check=True)
+                result = subprocess.run(["python", model, str(path_to_fasta)], capture_output=True, text=True, check=True)
 
                 result_path = result.stdout.strip().split(" ")[-1]
+                if model == "structure_prediction/omega_fold.py":
+                    result_path = path_to_fasta.replace(".fasta", "_omegaFold.pdb")
                 results.append(result_path)
                 print(f"Model {model} executed successfully. Path to pdb: {result_path}")
             except Exception as e:
@@ -144,7 +146,7 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
     """
     for widget in root.winfo_children():
         widget.pack_forget()
-    with open(str(path_to_fasta.name)) as fasta_file:
+    with open(str(path_to_fasta)) as fasta_file:
         sequence = fasta_file.read().strip().split('\n')
         header = sequence[0][1:]
         sequence = "".join(sequence[1:])
