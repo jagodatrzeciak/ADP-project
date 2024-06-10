@@ -91,7 +91,9 @@ def pdb_correctness(pdb_id):
     try:
         fasta = requests.get(f'https://www.rcsb.org/fasta/entry/{pdb_id}')
         with open(f"results/{pdb_id}.fasta", "w") as fasta_file:
-            fasta_file.write(fasta.text)
+            header = fasta.text.split('\n')[0].strip().split("|")[0]
+            to_write = f"{header}\n" + "".join(fasta.text.split('\n')[1:])
+            fasta_file.write(to_write)
         return f"results/{pdb_id}.fasta"
     except:
         return None
@@ -107,7 +109,9 @@ def uniprot_correctness(uniprot_id):
         uniprot_id = uniprot_id.strip()
         fasta = requests.get(f'https://www.uniprot.org/uniprot/{uniprot_id}.fasta')
         with open(f"results/{uniprot_id}.fasta", "w") as fasta_file:
-            fasta_file.write(fasta.text)
+            header = fasta.text.split('\n')[0].strip().split("|")[1]
+            to_write = f">{header}\n" + "".join(fasta.text.split('\n')[1:])
+            fasta_file.write(to_write)
         return f"results/{uniprot_id}.fasta"
     except:
         return None
