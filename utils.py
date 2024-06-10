@@ -1,3 +1,5 @@
+import time
+
 import requests
 import os
 import subprocess
@@ -5,10 +7,11 @@ import subprocess
 from Bio import SeqIO
 
 
-def rmsd_calculation(pdb_files):
+def rmsd_calculation(pdb_files, quiet=True):
     """
     Open the Pymol windows with the pdb files in silent mode,
     make superposition and calculate RMSD if more than one file.
+    :param quiet:
     :param pdb_files: List of PDB file paths
     :return: RMSD value if more than one file, None otherwise
     """
@@ -17,20 +20,26 @@ def rmsd_calculation(pdb_files):
         script_content += f"load {pdb}, model{i + 1}\n"
 
     if len(pdb_files) > 1:
-        script_content += "super " + ", ".join([f"model{i + 1}" for i in range(len(pdb_files))]) + "\n"
-        script_content += "print('RMSD:', cmd.rms_cur('model1', 'model2'))\n"
+        script_content += "align " + ", ".join([f"model{i + 1}" for i in range(len(pdb_files))]) + ", object=aln\n"
+        #script_content += "print('RMSD:', cmd.rms_cur('model1', 'model2'))\n"
 
     script_path = "temp_pymol_script.pml"
     with open(script_path, 'w') as script_file:
         script_file.write(script_content)
+    if quiet:
+        result = subprocess.run(["pymol", "-cq", script_path], capture_output=True, text=True)
+        rmsd = None
+        if "RMSD =" in result.stdout:
+            rmsd = float(result.stdout.split("RMSD =")[1].strip().split()[0])
+            print(f"RMSD: {rmsd}")
+            os.remove(script_path)
+        return rmsd
+    else:
+        subprocess.Popen(["pymol", script_path]).pid
+        time.sleep(5)
+        os.remove(script_path)
 
-    result = subprocess.run(["pymol", "-cq", script_path], capture_output=True, text=True)
-    os.remove(script_path)
-    rmsd = None
-    if "RMSD: " in result.stdout:
-        rmsd = float(result.stdout.split("RMSD: ")[1].strip())
-        print(f"RMSD: {rmsd}")
-    return rmsd
+
 
 
 def check_fasta_correctness(fasta_sequence):
@@ -120,7 +129,7 @@ def uniprot_correctness(uniprot_id):
 def get_sequence_length(path_to_fasta):
     """
     Get the length of the sequence from the FASTA file.
-    :param path_to_fasta:
+    :param path_to_fasta: path to the FASTA file
     :return: length of the sequence
     """
     for record in SeqIO.parse(path_to_fasta, "fasta"):
