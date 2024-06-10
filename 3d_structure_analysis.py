@@ -311,7 +311,7 @@ root.geometry("1500x600")
 
 tk.Label(root, text="3D Structure Prediction and Disorder Analysis Toolkit", font=("Helvetica", 20)).pack(pady=10)
 tk.Label(root, text="Version 1.0").pack(pady=5)
-tk.Label(root, text="Authors: Michał Rembalski, Jagoda Trzeciak, Bruno Puczko-Szymański, Marta Korpacz").pack(pady=5)
+tk.Label(root, text="Authors: Michal Rembalski, Jagoda Trzeciak, Bruno Puczko-Szymanski, Marta Korpacz").pack(pady=5)
 tk.Label(root, text="License: MIT").pack(pady=5)
 tk.Label(root, text="Github: https://github.com/jagodatrzeciak/ADP-project").pack(pady=5)
 tk.Button(root, text="Start", command=show_main_screen, font=("Helvetica", 12)).pack(pady=20)
