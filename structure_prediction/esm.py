@@ -14,7 +14,7 @@ def run_esmfold(sequence):
 
 def main(fasta_file):
     for record in SeqIO.parse(fasta_file, "fasta"):
-        sequence = str(record.seq)
+        sequence = str(record.seq).upper()
         pdb_data = run_esmfold(sequence)
         if pdb_data:
             pdb_file_name = f"{fasta_file.split('.')[0]}_esm.pdb"

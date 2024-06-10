@@ -224,7 +224,7 @@ def run_iupred(paths_to_pdb, path_to_fasta):
     iupred_results = []
     for pdb_file in paths_to_pdb:
         try:
-            result = subprocess.run(["python", "disorder_analysis/iupred2a/iupred2a.py", pdb_file], capture_output=True, text=True, check=True)
+            result = subprocess.run(["python", "disorder_analysis/disorder_analysis.py", pdb_file], capture_output=True, text=True, check=True)
             iupred_results.append(result.stdout.strip().split(" ")[-1])
             print(f"IUPred executed successfully. Path to pdb: {result.stdout.strip()}")
         except Exception as e:
