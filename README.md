@@ -33,8 +33,18 @@ python setup.py install
 This command will download the weight from https://helixon.s3.amazonaws.com/release1.pt to 
 ```~/.cache/omegafold_ckpt/model.pt``` and load the model.
 
+#### Packages
+
+Make sure to create a conda environment with the following packages:
+```
+conda env create -f environment.yml
+```
+
 ### Usage
-TODO
+To start our application, run the following command:
+```
+python 3d_structure_analysis.py
+```
 
 ## Disorder Prediction and Visualization
 
