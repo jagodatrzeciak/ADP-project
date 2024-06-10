@@ -100,7 +100,10 @@ def main(input):
             exit(1)
         sequences = get_seq_from_pdb(input)
         pdb_file = input
-        output = f"{result_dir_path}/{input.split('.')[0]}.pse"
+        if '/' in input:
+            output = f"{result_dir_path}/{input.split('/')[-1].split('.')[0]}.pse"
+        else:
+            output = f"{result_dir_path}/{input.split('.')[0]}.pse"
     else:
         sequences = {'A': get_sequence_from_uniprot(input)}
         pdb_file = download_pdb(input)

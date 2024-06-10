@@ -303,10 +303,10 @@ model1_var = tk.BooleanVar()
 model2_var = tk.BooleanVar()
 model3_var = tk.BooleanVar()
 
-fasta_text = tk.Text(root, wrap=tk.WORD, height=10)
+fasta_text = tk.Text(root, wrap=tk.WORD, height=5)
 pdb_entry = tk.Entry(root)
 uniprot_entry = tk.Entry(root)
-pdb_paths_text = tk.Text(root, wrap=tk.WORD, height=5)
+pdb_paths_text = tk.Text(root, wrap=tk.WORD, height=1)
 process_button = tk.Button(root, text="Process Input", command=process_input)
 
 root.mainloop()
