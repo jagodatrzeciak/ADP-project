@@ -3,7 +3,8 @@ from tkinter import messagebox
 import subprocess
 import os
 from subprocess import Popen
-from utils import check_fasta_correctness, write_fasta_file_to_temp, pdb_correctness, uniprot_correctness
+from utils import check_fasta_correctness, write_fasta_file_to_temp, pdb_correctness, uniprot_correctness, \
+    rmsd_calculation, fasta_from_pdb
 
 
 def process_input():
@@ -47,6 +48,17 @@ def process_input():
             else:
                 messagebox.showinfo("Success", "UniProt ID processed successfully!")
                 show_model_selection(path_to_fasta)
+    elif input_type == "PDB Paths":
+        pdb_paths = pdb_paths_text.get("1.0", tk.END).strip().split()
+        if not pdb_paths:
+            messagebox.showerror("Input Error", "Please provide at least one PDB file path.")
+        else:
+            messagebox.showinfo("Success", "PDB file paths provided successfully!")
+            path = fasta_from_pdb(pdb_paths[0])
+            if path is None:
+                messagebox.showerror("Input Error", "PDB file paths are incorrect.")
+            else:
+                ask_iupred_analysis(pdb_paths, path)
     else:
         messagebox.showerror("Input Error", "Please select an input type.")
 
@@ -69,6 +81,11 @@ def update_input_fields():
         fasta_text.config(state=tk.DISABLED)
         pdb_entry.config(state=tk.DISABLED)
         uniprot_entry.config(state=tk.NORMAL)
+    elif input_type == "PDB Paths":
+        fasta_text.config(state=tk.DISABLED)
+        pdb_entry.config(state=tk.DISABLED)
+        uniprot_entry.config(state=tk.DISABLED)
+        pdb_paths_text.config(state=tk.NORMAL)
 
 
 def show_model_selection(path_to_fasta):
@@ -109,10 +126,15 @@ def run_models(path_to_fasta):
         selected_models.append("structure_prediction/omega_fold.py")
 
     if selected_models:
+        messagebox.showinfo("Model Execution",
+                            "Running the selected models may take some time. Please wait...\n While waiting you can read some papers about the selected models:"
+                            "\n- OmegaFold: https://www.biorxiv.org/content/10.1101/2022.07.21.500999v1.abstract\n- ESMfold: https://www.science.org/doi/10.1126/science.ade2574\n- SwissModel: https://academic.oup.com/nar/article/46/W1/W296/5000024\n")
+
         results = []
         for model in selected_models:
             try:
-                result = subprocess.run(["python", model, str(path_to_fasta)], capture_output=True, text=True, check=True)
+                result = subprocess.run(["python", model, str(path_to_fasta)], capture_output=True, text=True,
+                                        check=True)
 
                 result_path = result.stdout.strip().split(" ")[-1]
                 if model == "structure_prediction/omega_fold.py":
@@ -129,7 +151,7 @@ def run_models(path_to_fasta):
 
 def ask_iupred_analysis(results, path_to_fasta):
     """
-    Ask the user if they want to run IUPred analysis. I
+    Ask the user if they want to run IUPred analysis.
     :param results: list with pdb file paths
     :param path_to_fasta: path to the fasta file
     :return:
@@ -152,6 +174,7 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
     :param pdb_files:
     :return:
     """
+
     for widget in root.winfo_children():
         widget.pack_forget()
     with open(str(path_to_fasta)) as fasta_file:
@@ -166,10 +189,24 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
         for res in iupred:
             tk.Label(root, text=res).pack(pady=5)
     if len(pdb_files) > 1:
-        tk.Label(root, text=f"RMSD: {rmsd(pdb_files)}").pack(pady=20)
+        RMSD = rmsd_calculation(pdb_files)
+        tk.Label(root, text=f"RMSD: {RMSD}").pack(pady=20)
     tk.Label(root, text="PDB files created by models:").pack(pady=10)
     for pdb_file in pdb_files:
         tk.Label(root, text=pdb_file).pack(pady=5)
+    with open(f"results/{header}_summary.txt", "w") as raport_file:
+        raport_file.write(f"Protein Name: {header}\nSequence: {sequence}\nLength of sequence: {len(sequence)}\n")
+        if iupred is not None:
+            raport_file.write("Paths to pymol session with based on disorder colored structures:\n")
+            for res in iupred:
+                raport_file.write(f"{res}\n")
+        if len(pdb_files) > 1:
+            raport_file.write(f"RMSD: {RMSD}\n")
+        raport_file.write("PDB files created by models:\n")
+        for pdb_file in pdb_files:
+            raport_file.write(f"{pdb_file}\n")
+    tk.Label(root, text=f"Results saved in results/{header}_summary.txt").pack(pady=20)
+
     tk.Button(root, text="Open PYMOL window with ouput pdbs", command=lambda: open_pymol(pdb_files)).pack(pady=20)
     tk.Button(root, text="Start Over", command=show_main_screen).pack(pady=20)
 
@@ -182,34 +219,6 @@ def open_pymol(pdb_files):
     """
     Popen(["pymol"] + pdb_files).pid
 
-
-def rmsd(pdb_files):
-    """
-    Open the Pymol windows with the pdb files in silent mode,
-    make superposition and calculate RMSD if more than one file.
-    :param pdb_files: List of PDB file paths
-    :return: RMSD value if more than one file, None otherwise
-    """
-    script_content = ""
-    for i, pdb in enumerate(pdb_files):
-        script_content += f"load {pdb}, model{i + 1}\n"
-
-    if len(pdb_files) > 1:
-        script_content += "super " + ", ".join([f"model{i + 1}" for i in range(len(pdb_files))]) + "\n"
-        script_content += "print('RMSD:', cmd.rms_cur('model1', 'model2'))\n"
-
-    script_path = "temp_pymol_script.pml"
-    with open(script_path, 'w') as script_file:
-        script_file.write(script_content)
-
-    result = subprocess.run(["pymol", "-cq", script_path], capture_output=True, text=True)
-    os.remove(script_path)
-    rmsd = None
-    if "RMSD: " in result.stdout:
-        rmsd = float(result.stdout.split("RMSD: ")[1].strip())
-        print(f"RMSD: {rmsd}")
-
-    return rmsd
 
 def run_iupred(paths_to_pdb, path_to_fasta):
     """
@@ -224,7 +233,8 @@ def run_iupred(paths_to_pdb, path_to_fasta):
     iupred_results = []
     for pdb_file in paths_to_pdb:
         try:
-            result = subprocess.run(["python", "disorder_analysis/iupred2a/iupred2a.py", pdb_file], capture_output=True, text=True, check=True)
+            result = subprocess.run(["python", "disorder_analysis/disorder_analysis.py", pdb_file], capture_output=True,
+                                    text=True, check=True)
             iupred_results.append(result.stdout.strip().split(" ")[-1])
             print(f"IUPred executed successfully. Path to pdb: {result.stdout.strip()}")
         except Exception as e:
@@ -248,6 +258,8 @@ def show_main_screen():
         anchor=tk.W)
     tk.Radiobutton(root, text="UniProt ID", variable=input_type_var, value="UniProt", command=update_input_fields).pack(
         anchor=tk.W)
+    tk.Radiobutton(root, text="PDB paths", variable=input_type_var, value="PDB Paths", command=update_input_fields).pack(
+        anchor=tk.W)
 
     tk.Label(root, text="FASTA Sequence:").pack(pady=5)
     fasta_text.pack(padx=10, pady=5, fill=tk.X, expand=True)
@@ -258,16 +270,23 @@ def show_main_screen():
     tk.Label(root, text="UniProt ID:").pack(pady=5)
     uniprot_entry.pack(padx=10, pady=5, fill=tk.X)
 
+    tk.Label(root, text="PDB File Paths (separated by spaces) if you want to skip modelling part. Ensure that provided files are structures of one and the same protein").pack(pady=5)
+    pdb_paths_text.pack(padx=10, pady=5, fill=tk.X, expand=True)
+
     process_button.pack(pady=20)
 
     update_input_fields()
 
 
+# folder to storage results
+if not os.path.exists("results"):
+    os.makedirs("results")
+
 root = tk.Tk()
 root.title("Protein Modeling Tool")
 default_font = ("Times", 12)
 root.option_add("*Font", default_font)
-root.geometry("800x500")
+root.geometry("1500x600")
 
 tk.Label(root, text="3D Structure Prediction and Disorder Analysis Toolkit", font=("Helvetica", 20)).pack(pady=10)
 tk.Label(root, text="Version 1.0").pack(pady=5)
@@ -285,6 +304,7 @@ model3_var = tk.BooleanVar()
 fasta_text = tk.Text(root, wrap=tk.WORD, height=10)
 pdb_entry = tk.Entry(root)
 uniprot_entry = tk.Entry(root)
+pdb_paths_text = tk.Text(root, wrap=tk.WORD, height=5)
 process_button = tk.Button(root, text="Process Input", command=process_input)
 
 root.mainloop()
