@@ -73,14 +73,17 @@ def update_input_fields():
         fasta_text.config(state=tk.NORMAL)
         pdb_entry.config(state=tk.DISABLED)
         uniprot_entry.config(state=tk.DISABLED)
+        pdb_paths_text.config(state=tk.DISABLED)
     elif input_type == "PDB":
         fasta_text.config(state=tk.DISABLED)
         pdb_entry.config(state=tk.NORMAL)
         uniprot_entry.config(state=tk.DISABLED)
+        pdb_paths_text.config(state=tk.DISABLED)
     elif input_type == "UniProt":
         fasta_text.config(state=tk.DISABLED)
         pdb_entry.config(state=tk.DISABLED)
         uniprot_entry.config(state=tk.NORMAL)
+        pdb_paths_text.config(state=tk.DISABLED)
     elif input_type == "PDB Paths":
         fasta_text.config(state=tk.DISABLED)
         pdb_entry.config(state=tk.DISABLED)
