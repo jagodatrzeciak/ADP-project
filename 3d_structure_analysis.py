@@ -145,8 +145,11 @@ def run_models(path_to_fasta):
 
     if selected_models:
         messagebox.showinfo("Model Execution",
-                            "Running the selected models may take some time. Please wait...\n While waiting you can read some papers about the selected models:"
-                            "\n- OmegaFold: https://www.biorxiv.org/content/10.1101/2022.07.21.500999v1.abstract\n- ESMfold: https://www.science.org/doi/10.1126/science.ade2574\n- SwissModel: https://academic.oup.com/nar/article/46/W1/W296/5000024\n")
+                            "Running the selected models may take some time. Please wait...\n While waiting you can "
+                            "read some papers about the selected models: "
+                            "\n- OmegaFold: https://www.biorxiv.org/content/10.1101/2022.07.21.500999v1.abstract\n- "
+                            "ESMfold: https://www.science.org/doi/10.1126/science.ade2574\n- SwissModel: "
+                            "https://academic.oup.com/nar/article/46/W1/W296/5000024\n")
 
         results = []
         for model in selected_models:
@@ -226,6 +229,8 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
     tk.Label(root, text=f"Results saved in results/{header}_summary.txt").pack(pady=20)
 
     tk.Button(root, text="Open PYMOL window with ouput pdbs", command=lambda: open_pymol(pdb_files)).pack(pady=20)
+    if iupred is not None:
+        tk.Button(root, text="Open PYMOL window with outputs colored by disorder", command=lambda: open_pymol(iupred)).pack(pady=20)
     tk.Button(root, text="Start Over", command=show_main_screen).pack(pady=20)
 
 
@@ -290,7 +295,8 @@ def show_main_screen():
     uniprot_entry.pack(padx=10, pady=5, fill=tk.X)
 
     tk.Label(root,
-             text="PDB File Paths (separated by spaces) if you want to skip modelling part. Ensure that provided files are structures of one and the same protein").pack(
+             text="PDB File Paths (separated by spaces) if you want to skip modelling part. Ensure that provided "
+                  "files are structures of one and the same protein").pack(
         pady=5)
     pdb_paths_text.pack(padx=10, pady=5, fill=tk.X, expand=True)
 
