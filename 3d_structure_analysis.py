@@ -4,7 +4,7 @@ import subprocess
 import os
 from subprocess import Popen
 from utils import check_fasta_correctness, write_fasta_file_to_temp, pdb_correctness, uniprot_correctness, \
-    rmsd_calculation, fasta_from_pdb
+    rmsd_calculation, fasta_from_pdb, get_sequence_length
 
 
 def process_input():
@@ -94,21 +94,36 @@ def update_input_fields():
 def show_model_selection(path_to_fasta):
     """
     Show the model selection screen. Run models button is enabled only if at least one model is selected.
+    Check if the sequence length is correct for the selected models.
     :param path_to_fasta:
     :return:
     """
     for widget in root.winfo_children():
         widget.pack_forget()
 
+    sequence_length = get_sequence_length(path_to_fasta)
+
     tk.Label(root, text="Select Models to Run:").pack(pady=5)
 
-    model1_checkbutton = tk.Checkbutton(root, text="SwissModel", variable=model1_var)
+    if sequence_length < 30:
+        model1_checkbutton = tk.Checkbutton(root, text="SwissModel (Disabled: sequence shorter than 30 aa)",
+                                            state=tk.DISABLED)
+    else:
+        model1_checkbutton = tk.Checkbutton(root, text="SwissModel", variable=model1_var)
     model1_checkbutton.pack(anchor=tk.W)
 
-    model2_checkbutton = tk.Checkbutton(root, text="ESMfold", variable=model2_var)
+    if sequence_length > 400:
+        model2_checkbutton = tk.Checkbutton(root, text="ESMfold (Disabled: sequence longer than 400 aa)",
+                                            state=tk.DISABLED)
+    else:
+        model2_checkbutton = tk.Checkbutton(root, text="ESMfold", variable=model2_var)
     model2_checkbutton.pack(anchor=tk.W)
-
-    model3_checkbutton = tk.Checkbutton(root, text="OmegaFold", variable=model3_var)
+    if sequence_length > 20:
+        model3_checkbutton = tk.Checkbutton(root, text="OmegaFold (caution, time consuming without GPU)",
+                                            variable=model3_var)
+        model3_checkbutton.pack(anchor=tk.W)
+    else:
+        model3_checkbutton = tk.Checkbutton(root, text="OmegaFold", variable=model3_var)
     model3_checkbutton.pack(anchor=tk.W)
 
     tk.Button(root, text="Run Models", command=lambda: run_models(path_to_fasta)).pack(pady=20)
@@ -236,7 +251,8 @@ def run_iupred(paths_to_pdb, path_to_fasta):
     iupred_results = []
     for pdb_file in paths_to_pdb:
         try:
-            result = subprocess.run(["python", "disorder_analysis/disorder_analysis.py", pdb_file], capture_output=True, text=True, check=True)
+            result = subprocess.run(["python", "disorder_analysis/disorder_analysis.py", pdb_file], capture_output=True,
+                                    text=True, check=True)
             iupred_results.append(result.stdout.strip().split(" ")[-1])
             print(f"IUPred executed successfully. Path to pdb: {result.stdout.strip()}")
         except Exception as e:
@@ -260,7 +276,8 @@ def show_main_screen():
         anchor=tk.W)
     tk.Radiobutton(root, text="UniProt ID", variable=input_type_var, value="UniProt", command=update_input_fields).pack(
         anchor=tk.W)
-    tk.Radiobutton(root, text="PDB paths", variable=input_type_var, value="PDB Paths", command=update_input_fields).pack(
+    tk.Radiobutton(root, text="PDB paths", variable=input_type_var, value="PDB Paths",
+                   command=update_input_fields).pack(
         anchor=tk.W)
 
     tk.Label(root, text="FASTA Sequence:").pack(pady=5)
@@ -272,7 +289,9 @@ def show_main_screen():
     tk.Label(root, text="UniProt ID:").pack(pady=5)
     uniprot_entry.pack(padx=10, pady=5, fill=tk.X)
 
-    tk.Label(root, text="PDB File Paths (separated by spaces) if you want to skip modelling part. Ensure that provided files are structures of one and the same protein").pack(pady=5)
+    tk.Label(root,
+             text="PDB File Paths (separated by spaces) if you want to skip modelling part. Ensure that provided files are structures of one and the same protein").pack(
+        pady=5)
     pdb_paths_text.pack(padx=10, pady=5, fill=tk.X, expand=True)
 
     process_button.pack(pady=20)

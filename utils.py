@@ -111,3 +111,14 @@ def uniprot_correctness(uniprot_id):
         return f"results/{uniprot_id}.fasta"
     except:
         return None
+
+
+def get_sequence_length(path_to_fasta):
+    """
+    Get the length of the sequence from the FASTA file.
+    :param path_to_fasta:
+    :return: length of the sequence
+    """
+    for record in SeqIO.parse(path_to_fasta, "fasta"):
+        return len(record.seq)
+    return 0
