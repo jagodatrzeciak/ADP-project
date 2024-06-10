@@ -35,7 +35,7 @@ This command will download the weight from https://helixon.s3.amazonaws.com/rele
 
 #### Packages
 
-Make sure to create a conda environment with the following packages:
+Make sure to create a conda environment with the command:
 ```
 conda env create -f environment.yml
 ```
