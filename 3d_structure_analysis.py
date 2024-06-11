@@ -226,12 +226,12 @@ def show_final_screen(path_to_fasta, pdb_files, iupred=None):
         raport_file.write("PDB files created by models:\n")
         for pdb_file in pdb_files:
             raport_file.write(f"{pdb_file}\n")
-    tk.Label(root, text=f"Results saved in results/{header}_summary.txt").pack(pady=20)
+    tk.Label(root, text=f"Results saved in results/{header}_summary.txt").pack(pady=5)
 
-    tk.Button(root, text="Open PYMOL window with ouput pdbs", command=lambda: rmsd_calculation(pdb_files, False)).pack(pady=20)
+    tk.Button(root, text="Open PYMOL window with ouput pdbs", command=lambda: rmsd_calculation(pdb_files, False)).pack(pady=5)
     if iupred is not None:
-        tk.Button(root, text="Open PYMOL window with outputs colored by disorder", command=lambda: open_pymol(iupred)).pack(pady=20)
-    tk.Button(root, text="Start Over", command=show_main_screen).pack(pady=20)
+        tk.Button(root, text="Open PYMOL window with outputs colored by disorder", command=lambda: open_pymol(iupred)).pack(pady=5)
+    tk.Button(root, text="Start Over", command=show_main_screen).pack(pady=5)
 
 
 def open_pymol(pdb_files):
